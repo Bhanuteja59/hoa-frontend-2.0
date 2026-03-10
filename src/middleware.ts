@@ -7,7 +7,6 @@ export default withAuth(
     const path = req.nextUrl.pathname;
 
     const adminRoutes = [
-      "/dashboard/residents-units",
       "/dashboard/settings",
       "/dashboard/dues-ledger/invoices/create"
     ];

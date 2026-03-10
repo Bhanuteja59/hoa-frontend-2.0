@@ -47,7 +47,7 @@ const sidebarItems: SidebarItem[] = [
     { name: "Requests", href: "/dashboard/requests", icon: ClipboardList },
     { name: "Calendar & Events", href: "/dashboard/calendar-events", icon: Calendar },
     { name: "Documents", href: "/dashboard/documents", icon: FolderOpen },
-    { name: "Community Directory", href: "/dashboard/residents-units", icon: Users, allowedRoles: ["ADMIN", "BOARD_ADMIN", "BOARD", "BOARD_MEMBER", "HOA_BOARD_MEMBER"] },
+    { name: "Community Directory", href: "/dashboard/residents-units", icon: Users },
     { name: "FAQ", href: "/dashboard/faq", icon: HelpCircle },
     { name: "Pay Dues", href: "/dashboard/pay-dues", icon: CreditCard },
 
@@ -129,7 +129,7 @@ export default function Sidebar({ className, onClose, onNavigate }: SidebarProps
                     {sidebarItems.map((item) => {
                         // Platform Admin Check
                         if (item.isPlatformOnly && !isSuperAdmin) return null;
-                        if (isSuperAdmin && !item.isPlatformOnly) return null;
+                        // Super Admins should be able to see both platform and community items
 
                         // Role-based Access Control
                         if (item.allowedRoles && !item.allowedRoles.some(role => userRoles.includes(role)) && !isSuperAdmin) {
@@ -147,9 +147,9 @@ export default function Sidebar({ className, onClose, onNavigate }: SidebarProps
                                 href={item.href}
                                 onClick={handleClose}
                                 className={cn(
-                                    "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-300 ease-in-out overflow-hidden",
+                                    "group relative flex items-center gap-3 rounded-xl mx-2 px-3 py-2.5 text-sm font-medium transition-all duration-300 ease-in-out overflow-hidden shadow-none",
                                     isActive
-                                        ? "bg-primary/10 text-primary shadow-sm"
+                                        ? "bg-primary/10 text-primary"
                                         : "text-muted-foreground hover:bg-accent/50 hover:text-foreground hover:shadow-sm"
                                 )}
                             >

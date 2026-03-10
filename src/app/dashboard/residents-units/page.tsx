@@ -33,36 +33,20 @@ import { useToast } from "@/hooks/use-toast";
 const buildingSchema = z.object({ name: z.string().min(2) });
 const unitSchema = z.object({ unit_number: z.string().min(1), building_id: z.string().optional().nullable() });
 
-import { useRouter } from "next/navigation";
-
-// ... existing imports
-
 export default function ResidentsUnitsPage() {
   const { data: session }: any = useSession();
   const roles: string[] = session?.roles ?? [];
-  // Allow all authenticated users to view
-  const hasAccess = true; // session is already checked by layout/middleware usually, but effectively all roles can view
   const isAdmin = roles.some(r => ["ADMIN", "BOARD_ADMIN", "BOARD", "BOARD_MEMBER", "HOA_BOARD_MEMBER"].includes(r));
   const canWrite = isAdmin;
+  // All authenticated users can view the directory — no redirect needed
 
-  if (!session) {
-    // Just a fallback, layout handles protection mostly
-  }
-
-  const router = useRouter();
-  useEffect(() => {
-    // Non-admins and non-board-admins cannot view the directory
-    if (session && !isAdmin) {
-      router.replace("/dashboard");
-    }
-  }, [session, isAdmin, router]);
 
   const { toast } = useToast();
 
   const qc = useQueryClient();
-  const buildings = useQuery({ queryKey: ["buildings", session?.user?.tenantId], queryFn: () => apiGet<any[]>("/units/buildings"), enabled: isAdmin });
-  const units = useQuery({ queryKey: ["units", session?.user?.tenantId], queryFn: () => apiGet<any[]>("/units"), enabled: isAdmin });
-  const users = useQuery({ queryKey: ["users", session?.user?.tenantId], queryFn: () => apiGet<any[]>("/users"), enabled: isAdmin });
+  const buildings = useQuery({ queryKey: ["buildings", session?.user?.tenantId], queryFn: () => apiGet<any[]>("/units/buildings"), enabled: !!session?.user && isAdmin });
+  const units = useQuery({ queryKey: ["units", session?.user?.tenantId], queryFn: () => apiGet<any[]>("/units"), enabled: !!session?.user && isAdmin });
+  const users = useQuery({ queryKey: ["users", session?.user?.tenantId], queryFn: () => apiGet<any[]>("/users"), enabled: !!session?.user });
   const { data: me } = useQuery({ queryKey: ["me"], queryFn: () => apiGet<any>("/auth/me") });
 
   // Creation State for Buildings/Units
@@ -232,7 +216,7 @@ export default function ResidentsUnitsPage() {
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <CardTitle className="flex items-center gap-2"><Users className="h-5 w-5" /> Directory</CardTitle>
-                  <CardDescription>Manage residents, admins, and unit assignments.</CardDescription>
+                  <CardDescription>View residents and their roles. Admins can also edit user details.</CardDescription>
                 </div>
                 <div className="flex flex-col sm:flex-row items-center gap-2">
                   <Input
@@ -290,7 +274,7 @@ export default function ResidentsUnitsPage() {
                         <th className="h-12 px-4 align-middle font-medium text-muted-foreground">Address</th>
                         <th className="h-12 px-4 align-middle font-medium text-muted-foreground">Community Type</th>
                         <th className="h-12 px-4 align-middle font-medium text-muted-foreground">Status</th>
-                        <th className="h-12 px-4 align-middle font-medium text-muted-foreground">Role</th>
+                        <th className="h-12 px-4 align-middle font-medium text-muted-foreground">Roles</th>
                         <th className="h-12 px-4 align-middle font-medium text-muted-foreground">Joined</th>
                         {canWrite && <th className="h-12 px-4 align-middle font-medium text-muted-foreground text-right">Actions</th>}
                       </tr>
@@ -359,7 +343,21 @@ export default function ResidentsUnitsPage() {
                             </Badge>
                           </td>
                           <td className="p-4 align-middle">
-                            <Badge variant={u.role === "ADMIN" ? "default" : "secondary"}>{u.role}</Badge>
+                            <div className="flex flex-wrap gap-1">
+                              {(u.roles && u.roles.length > 0 ? u.roles : [u.role]).map((r: string) => (
+                                <Badge
+                                  key={r}
+                                  variant={r === "ADMIN" ? "default" : r === "BOARD" || r === "BOARD_MEMBER" || r === "HOA_BOARD_MEMBER" ? "secondary" : "outline"}
+                                  className={`text-[10px] font-bold ${
+                                    r === "ADMIN" ? "bg-violet-600 text-white" :
+                                    r === "BOARD" || r === "BOARD_MEMBER" || r === "HOA_BOARD_MEMBER" ? "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300" :
+                                    "bg-slate-100 text-slate-600 dark:bg-slate-800"
+                                  }`}
+                                >
+                                  {r === "USER" ? "Resident" : r.replace(/_/g, " ")}
+                                </Badge>
+                              ))}
+                            </div>
                           </td>
                           <td className="p-4 align-middle">{new Date(u.created_at).toLocaleDateString()}</td>
                           {canWrite && (
@@ -853,7 +851,24 @@ export default function ResidentsUnitsPage() {
                 <div>
                   <h3 className="text-lg font-semibold leading-none">{viewingUser.name}</h3>
                   <p className="text-sm text-muted-foreground mt-1">{viewingUser.email}</p>
-                  <Badge variant="outline" className="mt-2 text-xs">{viewingUser.role}</Badge>
+                  {/* Show all roles as color-coded badges */}
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {(viewingUser.roles && viewingUser.roles.length > 0
+                      ? viewingUser.roles
+                      : [viewingUser.role]
+                    ).map((r: string) => (
+                      <Badge
+                        key={r}
+                        className={`text-[10px] font-bold ${
+                          r === "ADMIN" ? "bg-violet-600 text-white" :
+                          r === "BOARD" || r === "BOARD_MEMBER" || r === "HOA_BOARD_MEMBER" ? "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300" :
+                          "bg-slate-100 text-slate-600 dark:bg-slate-800"
+                        }`}
+                      >
+                        {r === "USER" ? "Resident" : r.replace(/_/g, " ")}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -878,28 +893,32 @@ export default function ResidentsUnitsPage() {
                     )}
                   </div>
                 </div>
-                <div className="col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 p-3 bg-muted/10 border border-border/50 rounded-[10px] mt-2">
-                  <div className="space-y-2">
-                    <Label className="text-xs font-semibold text-foreground uppercase tracking-wider">Account Number</Label>
-                    <div>
-                      {viewingUser.account_number ? (
-                        <div className="flex items-center justify-center px-4 h-10 border border-primary/20 rounded-[8px] text-base font-mono font-bold bg-primary/10 text-primary shadow-sm tracking-widest">
-                          {viewingUser.account_number}
-                        </div>
-                      ) : <span className="text-xs text-muted-foreground italic">None</span>}
+                {/* Sensitive IDs — Admin Only */}
+                {isAdmin && (
+                  <div className="col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 p-3 bg-muted/10 border border-border/50 rounded-[10px] mt-2">
+                    <div className="space-y-2">
+                      <Label className="text-xs font-semibold text-foreground uppercase tracking-wider">Account Number</Label>
+                      <div>
+                        {viewingUser.account_number ? (
+                          <div className="flex items-center justify-center px-4 h-10 border border-primary/20 rounded-[8px] text-base font-mono font-bold bg-primary/10 text-primary shadow-sm tracking-widest">
+                            {viewingUser.account_number}
+                          </div>
+                        ) : <span className="text-xs text-muted-foreground italic">None</span>}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs font-semibold text-foreground uppercase tracking-wider">Registration Code</Label>
+                      <div>
+                        {viewingUser.registration_number ? (
+                          <div className="flex items-center justify-center px-4 h-10 border border-primary/20 rounded-[8px] text-base font-mono font-bold bg-primary/10 text-primary shadow-sm tracking-widest">
+                            {viewingUser.registration_number}
+                          </div>
+                        ) : <span className="text-xs text-muted-foreground italic">None</span>}
+                      </div>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs font-semibold text-foreground uppercase tracking-wider">Registration Code</Label>
-                    <div>
-                      {viewingUser.registration_number ? (
-                        <div className="flex items-center justify-center px-4 h-10 border border-primary/20 rounded-[8px] text-base font-mono font-bold bg-primary/10 text-primary shadow-sm tracking-widest">
-                          {viewingUser.registration_number}
-                        </div>
-                      ) : <span className="text-xs text-muted-foreground italic">None</span>}
-                    </div>
-                  </div>
-                </div>
+                )}
+
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Phone</Label>
                   <div className="font-medium">
