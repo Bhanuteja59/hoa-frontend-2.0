@@ -381,7 +381,7 @@ export default function AdminDashboardPage() {
                                         }}
                                         itemStyle={{ color: "#a78bfa" }}
                                         labelFormatter={(val) => new Date(val).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
-                                        formatter={(val: any) => [`${Number(val).toLocaleString()} visitors`, "Unique Visitors"]}
+                                        formatter={(val: any) => [`${Number(val).toLocaleString()} visits`, "User Visits"]}
                                     />
                                     <Area
                                         type="monotone"
@@ -403,7 +403,7 @@ export default function AdminDashboardPage() {
                         )}
                     </div>
                     <p className="text-center text-[10px] text-slate-400 font-semibold mt-3">
-                        Showing {analyticsDays}-day window · Real-time data from database · Refreshes every 15s
+                        Showing {analyticsDays}-day window · Real user visits only · Super-admin excluded · Refreshes every 15s
                     </p>
                 </div>
 
@@ -417,9 +417,14 @@ export default function AdminDashboardPage() {
                                 <MousePointer className="h-4 w-4 text-violet-500" />
                                 <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-tight uppercase">Top Visited Pages</h3>
                             </div>
-                            <span className="text-[10px] text-slate-400 font-bold uppercase bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
-                                {analyticsDays}d data
-                            </span>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/30 px-2 py-0.5 rounded-full">
+                                    Real Users Only
+                                </span>
+                                <span className="text-[10px] text-slate-400 font-bold uppercase bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+                                    {analyticsDays}d data
+                                </span>
+                            </div>
                         </div>
                         <div className="overflow-y-auto max-h-[196px] pr-1 space-y-2 scrollbar-thin">
                             {isAnalyticsLoading ? (
