@@ -1,0 +1,184 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Premium AI Light Theme - Slate/Indigo */
+    --background: 210 40% 98%;
+    /* Slate 50 */
+    --foreground: 222.2 84% 4.9%;
+    /* Slate 950 */
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 262.1 83.3% 57.8%;
+    /* Violet 600 - Main Brand */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    /* Slate 100 */
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Slate 500 */
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    /* Slate 200 */
+    --input: 214.3 31.8% 91.4%;
+    --ring: 262.1 83.3% 57.8%;
+
+    --radius: 0.75rem;
+    /* More rounded for modern feel */
+  }
+
+  .dark {
+    /* Premium AI Dark Theme - Deep Blue/Slate */
+    --background: 222.2 84% 4.9%;
+    /* Slate 950 */
+    --foreground: 210 40% 98%;
+    /* Slate 50 */
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 263.4 70% 50.4%;
+    /* Violet 500 */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    /* Slate 900 */
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    /* Slate 400 */
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 263.4 70% 50.4%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    cursor: default;
+    /* Clean linear gradient background */
+    background-image: linear-gradient(to bottom right, hsl(var(--background)), #f0f4f8);
+  }
+
+  .dark body {
+    background-image: linear-gradient(to bottom right, #0f172a, #1e1b4b);
+  }
+
+  /* Prevent focus ring on click for mouse users while keeping it for keyboard users */
+  :focus:not(:focus-visible) {
+    outline: none !important;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/70 backdrop-blur-lg border border-white/20 shadow-sm dark:bg-slate-950/70 dark:border-slate-800/50;
+  }
+
+  .glass-card {
+    @apply bg-white/50 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md transition-all duration-300 dark:bg-slate-900/50 dark:border-slate-800;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* ── Super Admin Theme Utilities ── */
+  /* These read from CSS custom props set by the layout */
+  .admin-text {
+    color: var(--admin-text) !important;
+  }
+
+  .admin-muted {
+    color: var(--admin-muted) !important;
+  }
+
+  /* Opacity variants using color-mix for theme-aware translucency */
+  .admin-text-60 {
+    color: color-mix(in srgb, var(--admin-text), transparent 40%) !important;
+  }
+
+  .admin-text-40 {
+    color: color-mix(in srgb, var(--admin-text), transparent 60%) !important;
+  }
+
+  .admin-text-20 {
+    color: color-mix(in srgb, var(--admin-text), transparent 80%) !important;
+  }
+
+  .admin-border {
+    border-color: var(--admin-border) !important;
+  }
+
+  .admin-divide>*+* {
+    border-color: var(--admin-border);
+  }
+
+  .admin-glass {
+    background: var(--admin-surface);
+    backdrop-filter: blur(16px);
+  }
+
+  .admin-surface-2 {
+    background: var(--admin-surface-2);
+  }
+
+  .admin-surface-3 {
+    background: color-mix(in srgb, var(--admin-text), transparent 95%);
+  }
+
+  .admin-surface-btn {
+    background: var(--admin-surface-2);
+    border: 1px solid var(--admin-border);
+  }
+
+  .admin-input {
+    background: var(--admin-input-bg);
+    border: 1px solid var(--admin-input-border);
+    color: var(--admin-text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .admin-input::placeholder {
+    color: var(--admin-muted);
+    opacity: 0.7;
+  }
+
+  .admin-input:focus {
+    border-color: rgba(124, 58, 237, 0.5);
+  }
+}
