@@ -268,6 +268,7 @@ export default function ResidentsUnitsPage() {
                     <thead className="bg-muted/50">
                       <tr className="border-b transition-colors hover:bg-muted/50 text-left">
                         <th className="h-12 px-4 align-middle font-medium text-muted-foreground">Name</th>
+                        <th className="h-12 px-4 align-middle font-medium text-muted-foreground whitespace-nowrap">Account No.</th>
                         <th className="h-12 px-4 align-middle font-medium text-muted-foreground">Email</th>
                         <th className="h-12 px-4 align-middle font-medium text-muted-foreground">Phone</th>
                         <th className="h-12 px-4 align-middle font-medium text-muted-foreground">Unit / Location</th>
@@ -281,7 +282,7 @@ export default function ResidentsUnitsPage() {
                     </thead>
                     <tbody>
                       {filteredUsers.length === 0 ? (
-                        <tr><td colSpan={10} className="p-4 text-center text-muted-foreground">No users found matching filters.</td></tr>
+                        <tr><td colSpan={11} className="p-4 text-center text-muted-foreground">No users found matching filters.</td></tr>
                       ) : filteredUsers.map((u: any) => (
                         <tr
                           key={u.id}
@@ -299,6 +300,9 @@ export default function ResidentsUnitsPage() {
                                 <Badge variant="secondary" className="text-[10px] h-4 px-1 opacity-70">Private</Badge>
                               </div>
                             ) : u.name}
+                          </td>
+                          <td className="p-4 align-middle text-muted-foreground font-mono text-sm">
+                            {u.account_number ? u.account_number : "-"}
                           </td>
                           <td className="p-4 align-middle text-muted-foreground">
                             {!u.privacy_show_email && u.id !== session?.user?.id && !isAdmin ? (
