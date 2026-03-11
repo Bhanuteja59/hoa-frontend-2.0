@@ -141,11 +141,17 @@ export default function Sidebar({ className, onClose, onNavigate }: SidebarProps
                             ? pathname === "/dashboard"
                             : pathname === item.href || pathname.startsWith(item.href + "/");
 
+                        const superAdminUrl = process.env.NEXT_PUBLIC_SUPERADMIN_URL;
+                        const href = (item.isPlatformOnly && superAdminUrl)
+                            ? `${superAdminUrl}${item.href}`
+                            : item.href;
+
                         return (
                             <Link
                                 key={item.name}
-                                href={item.href}
+                                href={href}
                                 onClick={handleClose}
+                                target={item.isPlatformOnly ? "_blank" : undefined}
                                 className={cn(
                                     "group relative flex items-center gap-3 rounded-xl mx-2 px-3 py-2.5 text-sm font-medium transition-all duration-300 ease-in-out overflow-hidden shadow-none",
                                     isActive

@@ -18,6 +18,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { useSession, signIn } from "next-auth/react";
 import PreLoginFooter from "@/components/layout/PreLoginFooter";
+import { useToast } from "@/hooks/use-toast";
+import { apiPostJson } from "@/lib/api";
 
 // Zod Schemas
 const baseSchema = z.object({
@@ -71,6 +73,7 @@ function RegisterForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { status } = useSession();
+    const { toast } = useToast();
 
     const urlToken = searchParams.get("token");
 
@@ -151,30 +154,12 @@ function RegisterForm() {
         }
 
         try {
-            const baseUrl = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000/api/v1";
-            const res = await fetch(`${baseUrl}/auth/register`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
+            await apiPostJson("/auth/register", payload);
+
+            toast({
+                title: "Registration successful!",
+                description: role === "BOARD_ADMIN" ? "Redirecting to your dashboard..." : "Please sign in with your new credentials.",
             });
-
-            if (!res.ok) {
-                const errorData = await res.json();
-
-                let errorMsg = "Registration failed.";
-                if (errorData.error && errorData.error.message) {
-                    errorMsg = errorData.error.message;
-                } else if (Array.isArray(errorData.detail)) {
-                    errorMsg = errorData.detail[0]?.msg || "Validation error";
-                } else if (errorData.detail && typeof errorData.detail === "string") {
-                    errorMsg = errorData.detail;
-                } else if (errorData.detail && errorData.detail.message) {
-                    errorMsg = errorData.detail.message;
-                }
-
-                setErr(errorMsg);
-                return;
-            }
 
             if (role === "BOARD_ADMIN") {
                 const signInRes = await signIn("credentials", {
@@ -192,8 +177,14 @@ function RegisterForm() {
             } else {
                 router.push("/login?registered=true");
             }
-        } catch (e) {
-            setErr("An unexpected error occurred.");
+        } catch (e: any) {
+            const errorMsg = e.message || "An unexpected error occurred.";
+            setErr(errorMsg);
+            toast({
+                title: "Registration Failed",
+                description: errorMsg,
+                variant: "destructive",
+            });
         } finally {
             setIsLoading(false);
         }
