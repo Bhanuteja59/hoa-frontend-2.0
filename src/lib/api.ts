@@ -77,6 +77,30 @@ function extractErrorMessage(status: number, text: string): string {
   return errorMessage;
 }
 
+export async function apiFetch(path: string, options: RequestInit = {}) {
+  const session: any = await getUniversalSession();
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers: {
+      "content-type": "application/json",
+      authorization: `Bearer ${session?.user?.accessToken ?? ""}`,
+      ...(session?.user?.tenantId
+        ? { "x-tenant-id": session.user.tenantId }
+        : session?.user?.isPlatformAdmin
+          ? { "x-tenant-id": "00000000-0000-0000-0000-000000000000" }
+          : devTenantHeaders()),
+      ...options.headers,
+    },
+  });
+
+  if (!res.ok) {
+    await handleAuthError(res, path);
+    const txt = await res.text().catch(() => "");
+    throw new Error(extractErrorMessage(res.status, txt));
+  }
+  return res.json();
+}
+
 export async function apiGet<T>(path: string): Promise<T> {
   const session: any = await getUniversalSession();
   const res = await fetch(`${API_BASE}${path}`, {
@@ -257,6 +281,18 @@ export async function apiDelete<T>(path: string): Promise<T> {
 }
 
 export async function apiDownload(path: string, filename: string): Promise<void> {
+  const blob = await apiGetBlob(path);
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+}
+
+export async function apiGetBlob(path: string): Promise<Blob> {
   const session: any = await getUniversalSession();
   const res = await fetch(`${API_BASE}${path}`, {
     method: "GET",
@@ -272,23 +308,16 @@ export async function apiDownload(path: string, filename: string): Promise<void>
 
   if (!res.ok) {
     await handleAuthError(res, path);
-    throw new Error(`Download failed: ${res.status}`);
+    throw new Error(`Fetch failed: ${res.status}`);
   }
 
-  const blob = await res.blob();
-  const url = window.URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  window.URL.revokeObjectURL(url);
-  document.body.removeChild(a);
+  return res.blob();
 }
 
 
 export const api = {
   get: apiGet,
+  getBlob: apiGetBlob,
   post: apiPostJson,
   put: apiPutJson,
   patch: apiPatchJson,

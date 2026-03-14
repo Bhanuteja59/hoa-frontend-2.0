@@ -182,3 +182,32 @@
     border-color: rgba(124, 58, 237, 0.5);
   }
 }
+
+/* ── ANIMATIONS ── */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-33.33%); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+}
+
+@keyframes slide-scroll {
+  0% { transform: translateX(0); }
+  100% { 
+    transform: translateX(var(--scroll-distance, -100%)); 
+  }
+}
+
+:root {
+  --scroll-distance: -1320px; /* Default for 6 images on mobile: (220*6 + 16*6) = 1320 + 96 = 1416? No, 220px*6 + 1rem*6. */
+}
+
+@media (min-width: 768px) {
+  :root {
+    --scroll-distance: -2160px; /* Default for 6 images on desktop: (340*6 + 32*6) = 2232? */
+  }
+}
+

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useSession, getSession } from "next-auth/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiGet, apiDelete } from "@/lib/api";
+import { apiGet, apiDelete, api } from "@/lib/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -47,23 +47,47 @@ export default function AdminDocumentsPage() {
 
   // Fetch doc token for viewing
   React.useEffect(() => {
+    let bUrl: string | null = null;
     if (!viewingDoc) {
       setDocumentUrl(null);
       return;
     }
     apiGet<{ token: string; url: string }>(`/documents/${viewingDoc.id}/token`)
-      .then(({ url }) => {
+      .then(async ({ url }) => {
         const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000/api/v1";
         // URL already starts with /documents
         const cleanApiBase = apiBase.endsWith("/") ? apiBase.slice(0, -1) : apiBase;
         const cleanUrl = url.startsWith("/") ? url : `/${url}`;
         const fullUrl = `${cleanApiBase}${cleanUrl}`;
-        setDocumentUrl(fullUrl);
+
+        const isPreviewable =
+          viewingDoc.mime_type === "application/pdf" ||
+          viewingDoc.mime_type.startsWith("image/") ||
+          viewingDoc.mime_type.startsWith("text/") ||
+          viewingDoc.filename.toLowerCase().endsWith(".pdf");
+
+        if (isPreviewable) {
+          try {
+            // Use api.getBlob to include Auth/Tenant headers (fixing 401)
+            const blob = await api.getBlob(url);
+            bUrl = URL.createObjectURL(blob);
+            setDocumentUrl(bUrl);
+          } catch (e) {
+            console.warn("Failed to fetch PDF blob, falling back:", e);
+            setDocumentUrl(fullUrl);
+          }
+        } else {
+          setDocumentUrl(fullUrl);
+        }
       })
       .catch((error) => {
         console.warn("Document file not available:", error);
         setDocumentUrl("ERROR");
       });
+
+    return () => {
+      if (bUrl) URL.revokeObjectURL(bUrl);
+    };
   }, [viewingDoc]);
 
   // Queries - Unconditional
@@ -194,14 +218,14 @@ export default function AdminDocumentsPage() {
           {documents.isLoading ? (
             <div className="space-y-4 py-4">
               {[1, 2, 3].map(i => (
-                 <div key={i} className="flex items-center gap-4 p-4 border rounded-xl shadow-sm">
-                   <Skeleton className="h-10 w-10 shrink-0" />
-                   <div className="space-y-2 flex-grow">
-                     <Skeleton className="h-4 w-1/3" />
-                     <Skeleton className="h-3 w-1/2" />
-                   </div>
-                   <Skeleton className="h-6 w-24 shrink-0" />
-                 </div>
+                <div key={i} className="flex items-center gap-4 p-4 border rounded-xl shadow-sm">
+                  <Skeleton className="h-10 w-10 shrink-0" />
+                  <div className="space-y-2 flex-grow">
+                    <Skeleton className="h-4 w-1/3" />
+                    <Skeleton className="h-3 w-1/2" />
+                  </div>
+                  <Skeleton className="h-6 w-24 shrink-0" />
+                </div>
               ))}
             </div>
           ) : documents.isError ? (

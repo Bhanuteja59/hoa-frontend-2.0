@@ -55,7 +55,7 @@ export default function PreLoginFooter() {
 
                 <div className="mt-12 md:mt-16 pt-8 border-t border-border/50 flex flex-col md:flex-row items-center justify-between gap-4">
                     <p className="text-center text-sm text-muted-foreground md:text-left">
-                        &copy; {new Date().getFullYear()} HOA Management Platform. All rights reserved.
+                        &copy; 2026 HOA Management Platform. All rights reserved.
                     </p>
                     <div className="flex gap-6 text-sm font-medium text-muted-foreground">
                         <Link href="/terms" className="hover:text-primary hover:underline underline-offset-4 transition-colors">

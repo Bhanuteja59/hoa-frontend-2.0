@@ -60,10 +60,18 @@ function RequestsContent() {
     const searchParams = useSearchParams();
     const tabParam = searchParams.get("tab");
 
-    const isAdmin = session?.roles?.includes("ADMIN");
-    const isBoard = session?.roles?.includes("BOARD") || session?.roles?.includes("BOARD_MEMBER");
-    // Default to APARTMENTS if not set, or handle logic safely
     const { data: me } = useQuery({ queryKey: ["me"], queryFn: () => apiGet<any>("/auth/me") });
+
+    // Normalize roles to uppercase from both session and fetched 'me' data for robustness
+    const normalizedRoles = Array.from(new Set([
+        ...(Array.isArray(session?.roles) ? session.roles : []),
+        ...(Array.isArray(me?.roles) ? me.roles : [])
+    ])).map(r => String(r).toUpperCase());
+
+    const isAdmin = normalizedRoles.includes("ADMIN");
+    const isBoard = normalizedRoles.includes("BOARD") || normalizedRoles.includes("BOARD_MEMBER");
+
+    // Default to APARTMENTS if not set, or handle logic safely
     // Prefer fetched data, fallback to session, then default
     const communityType = me?.community_type || session?.user?.community_type || "APARTMENTS";
 
@@ -213,8 +221,8 @@ function RequestsContent() {
             toast({ title: "Validation Error", description: "Title (3+) and Description (5+) required.", variant: "destructive" });
             return;
         }
-        if (isAdmin && !editingWO && !woUnitId) {
-            toast({ title: "Validation Error", description: "Admin must select a Unit.", variant: "destructive" });
+        if ((isAdmin || isBoard) && !editingWO && !woUnitId) {
+            toast({ title: "Validation Error", description: "You must select a Unit for this request.", variant: "destructive" });
             return;
         }
 
@@ -745,14 +753,16 @@ function RequestsContent() {
                             <Label className="text-sm font-semibold">Description</Label>
                             <Textarea placeholder="Provide details about the issue..." value={woDesc} onChange={(e) => setWODesc(e.target.value)} className="h-32" />
                         </div>
-                        {isAdmin && !editingWO && (
+                        {(isAdmin || isBoard) && !editingWO && (
                             <div className="grid gap-2">
                                 <Label className="text-sm font-semibold">Unit</Label>
                                 <Select value={woUnitId} onValueChange={setWOUnitId}>
                                     <SelectTrigger><SelectValue placeholder="Select Unit" /></SelectTrigger>
                                     <SelectContent>
                                         {(units.data ?? []).map((u: any) => (
-                                            <SelectItem key={u.id} value={u.id}>{u.unit_number}</SelectItem>
+                                            <SelectItem key={u.id} value={u.id}>
+                                                {u.building_name ? `${u.building_name} - ${u.unit_number}` : u.unit_number}
+                                            </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
