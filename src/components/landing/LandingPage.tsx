@@ -96,7 +96,7 @@ function ImageSlider({ images }: { images: string[] }) {
                 {doubledImages.map((img, i) => (
                     <div 
                         key={i} 
-                        className="w-[220px] h-[160px] md:w-[340px] md:h-[240px] shrink-0 rounded-2xl md:rounded-[2.5rem] overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl group/img relative"
+                        className="w-[220px] h-[360px] md:w-[340px] md:h-[360px] shrink-0 rounded-2xl md:rounded-[2.5rem] overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl group/img relative"
                     >
                         <img
                             src={img}
@@ -113,12 +113,12 @@ function ImageSlider({ images }: { images: string[] }) {
 }
 
 const SLIDE_IMAGES = [
-    "/images/slides/img%201.jpeg",
-    "/images/slides/img%202.jpeg",
-    "/images/slides/img%203.jpeg",
-    "/images/slides/img%204.jpeg",
-    "/images/slides/img%205.jpeg",
-    "/images/slides/img%206.jpeg",
+    "/images/slides/img1.png",
+    "/images/slides/img2.png",
+    "/images/slides/img3.png",
+    "/images/slides/img4.png",
+    "/images/slides/img5.png",
+    "/images/slides/img6.png",
 ];
 
 
