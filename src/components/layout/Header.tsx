@@ -26,7 +26,7 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { ModeToggle } from "@/components/mode-toggle";
 import Sidebar from "@/components/layout/Sidebar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -49,11 +49,28 @@ export default function Header() {
             .map((n) => n[0])
             .join("")
             .slice(0, 2)
-            .toUpperCase() || "U";
+            ?.toUpperCase() || "U";
+
+    const [isScrolled, setIsScrolled] = useState(false);
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 20);
+        };
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
 
     return (
-        <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 shadow-sm">
-            <div className="mx-auto flex h-16 max-w-screen-2xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <header className={cn(
+            "sticky top-0 z-50 transition-all duration-500",
+            isScrolled 
+                ? "border-b bg-background/80 backdrop-blur-xl py-0 shadow-sm" 
+                : "bg-transparent py-2 border-transparent"
+        )}>
+            <div className={cn(
+                "mx-auto flex max-w-screen-2xl items-center justify-between px-4 sm:px-6 lg:px-8 transition-all duration-500",
+                isScrolled ? "h-14" : "h-20"
+            )}>
 
                 <div className="flex items-center gap-4">
                     {/* LEFT — MENU (Only if logged in) */}
