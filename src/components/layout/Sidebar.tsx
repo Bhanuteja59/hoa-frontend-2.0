@@ -50,7 +50,7 @@ const sidebarItems: SidebarItem[] = [
     { name: "Community Directory", href: "/dashboard/residents-units", icon: Users },
     { name: "FAQ", href: "/dashboard/faq", icon: HelpCircle },
     { name: "Pay Dues", href: "/dashboard/pay-dues", icon: CreditCard },
-    { name: "Financial Ledger", href: "/dashboard/dues-ledger", icon: BarChart3, allowedRoles: ["ADMIN", "BOARD", "BOARD_MEMBER"] },
+    { name: "Financial Ledger", href: "/dashboard/dues-ledger", icon: BarChart3, allowedRoles: ["ADMIN", "BOARD", "BOARD_MEMBER", "USER", "RESIDENT"] },
 
     // ── Super Admin section ──────────────────────
     { name: "Platform Dashboard", href: "/admin/dashboard", icon: Activity, isPlatformOnly: true },

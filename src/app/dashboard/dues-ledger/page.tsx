@@ -77,6 +77,9 @@ export default function LedgerPage() {
           : "/ledger/balance"
       ),
     enabled: !!session,
+    // Auto-refresh frequently for admins to track updates in near real-time
+    refetchInterval: isAdmin ? 10000 : false,
+    refetchOnWindowFocus: isAdmin,
   });
 
   const history = useQuery({
@@ -88,6 +91,9 @@ export default function LedgerPage() {
           : "/ledger/history"
       ),
     enabled: !!session,
+    // Keep the ledger history up-to-date for admin users
+    refetchInterval: isAdmin ? 10000 : false,
+    refetchOnWindowFocus: isAdmin,
   });
 
   // Automatically select first unit for admin if non-selected
@@ -502,7 +508,7 @@ export default function LedgerPage() {
                           "text-xl font-black tabular-nums",
                           tx.type === "CHARGE" ? "text-rose-600" : "text-emerald-500"
                         )}>
-                          {tx.type === "CHARGE" ? "+" : "-"}${(tx.amount_cents / 100).toFixed(2)}
+                          ${ (tx.amount_cents / 100).toFixed(2) }
                         </div>
                       </div>
                     ))}
