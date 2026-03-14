@@ -296,7 +296,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="flex-1 space-y-8 p-4 md:p-6 lg:p-8 pt-6 max-w-7xl mx-auto">
+    <div className="flex-1 space-y-6 p-4 md:p-6 lg:p-8 pt-2 max-w-7xl mx-auto">
       {/* Settings Header with Gradient */}
       <div className="relative">
         {/* Decorative gradient blur */}
@@ -336,23 +336,23 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="contact" className="space-y-6">
-        <div className="sticky top-0 z-40 bg-background backdrop-blur-xl py-4 border-b shadow-sm">
-          <TabsList className="w-full justify-start bg-muted/40 p-1 rounded-lg overflow-x-auto scrollbar-hide h-auto min-h-[40px]">
+        <div className="sticky top-2 z-40 bg-background/95 backdrop-blur-xl py-2 px-2 border rounded-2xl shadow-xl mb-4 mx-1">
+          <TabsList className="w-full justify-start bg-muted/50 p-1 rounded-xl overflow-x-auto scrollbar-hide h-auto border-none shadow-none">
             <TabsTrigger
               value="contact"
-              className="rounded-md data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-blue-600 data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200 text-xs md:text-sm py-2 px-4 whitespace-nowrap"
+              className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all duration-300 text-xs md:text-sm py-2 px-5 whitespace-nowrap font-medium"
             >
               Contact Info
             </TabsTrigger>
             <TabsTrigger
               value="login"
-              className="rounded-md data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-blue-600 data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200 text-xs md:text-sm py-2 px-4 whitespace-nowrap"
+              className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all duration-300 text-xs md:text-sm py-2 px-5 whitespace-nowrap font-medium"
             >
               Login Info
             </TabsTrigger>
             <TabsTrigger
               value="preferences"
-              className="rounded-md data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-blue-600 data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200 text-xs md:text-sm py-2 px-4 whitespace-nowrap"
+              className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all duration-300 text-xs md:text-sm py-2 px-5 whitespace-nowrap font-medium"
             >
               Account Preferences
             </TabsTrigger>
@@ -1282,8 +1282,8 @@ function TwoFactorAuthCard() {
   const [enabled, setEnabled] = useState(false); // Mock state
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+    <Card className="border-border/50 shadow-xl overflow-hidden">
+      <CardHeader className="flex flex-row items-center justify-between border-b bg-gradient-to-r from-primary/5 via-blue-600/5 to-purple-600/5">
         <div>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" /> Two-Factor Authentication
@@ -1347,8 +1347,8 @@ function SecurityHistoryCard() {
   ];
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="border-border/50 shadow-lg overflow-hidden">
+      <CardHeader className="border-b bg-gradient-to-r from-primary/5 via-blue-600/5 to-purple-600/5">
         <CardTitle className="flex items-center gap-2">
           <Shield className="h-5 w-5" /> Security History
         </CardTitle>
@@ -1389,8 +1389,8 @@ function SecurityHistoryCard() {
 function SystemInfoSection() {
   const { data: session }: any = useSession();
   return (
-    <Card>
-      <CardHeader>
+    <Card className="border-border/50 shadow-lg overflow-hidden">
+      <CardHeader className="border-b bg-gradient-to-r from-primary/5 via-blue-600/5 to-purple-600/5">
         <CardTitle className="flex items-center gap-2">
           <Server className="h-5 w-5" /> System Info
         </CardTitle>
@@ -1412,8 +1412,8 @@ function ThemePreferencesCard() {
   const { setTheme, theme } = useTheme();
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="border-border/50 shadow-lg hover:shadow-xl transition-shadow duration-300">
+      <CardHeader className="border-b bg-gradient-to-r from-primary/5 via-blue-600/5 to-purple-600/5">
         <CardTitle className="flex items-center gap-2">
           <Monitor className="h-5 w-5" /> Appearance
         </CardTitle>
@@ -1456,8 +1456,8 @@ function NotificationsCard() {
   const [pushEnabled, setPushEnabled] = useState(true);
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="border-border/50 shadow-lg hover:shadow-xl transition-shadow duration-300">
+      <CardHeader className="border-b bg-gradient-to-r from-primary/5 via-blue-600/5 to-purple-600/5">
         <CardTitle className="flex items-center gap-2">
           <Bell className="h-5 w-5" /> Notification Settings
         </CardTitle>
@@ -1498,8 +1498,8 @@ function NotificationsCard() {
 
 function GeneralPreferencesCard() {
   return (
-    <Card>
-      <CardHeader>
+    <Card className="border-border/50 shadow-lg hover:shadow-xl transition-shadow duration-300">
+      <CardHeader className="border-b bg-gradient-to-r from-primary/5 via-blue-600/5 to-purple-600/5">
         <CardTitle className="flex items-center gap-2">
           <Globe className="h-5 w-5" /> Language & Region
         </CardTitle>
@@ -1534,8 +1534,8 @@ function GeneralPreferencesCard() {
 
 function CommunicationPreferencesCard() {
   return (
-    <Card>
-      <CardHeader>
+    <Card className="border-border/50 shadow-lg hover:shadow-xl transition-shadow duration-300">
+      <CardHeader className="border-b bg-gradient-to-r from-primary/5 via-blue-600/5 to-purple-600/5">
         <CardTitle className="flex items-center gap-2">
           <MessageSquare className="h-5 w-5" /> Communication Preferences
         </CardTitle>

@@ -146,17 +146,32 @@ export default function DocumentsPage() {
     // ─── Fetch doc token for viewing ─────────────────────────────────
 
     React.useEffect(() => {
+        let bUrl: string | null = null;
         if (!viewingDoc) { setDocumentUrl(null); return; }
+
         apiGet<{ token: string; url: string }>(`/documents/${viewingDoc.id}/token`)
-            .then(({ url }) => {
+            .then(async ({ url }) => {
                 const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000/api/v1";
-                // URL already starts with /documents
                 const cleanApiBase = apiBase.endsWith("/") ? apiBase.slice(0, -1) : apiBase;
                 const cleanUrl = url.startsWith("/") ? url : `/${url}`;
                 const fullUrl = `${cleanApiBase}${cleanUrl}`;
+
+                const isPdf = viewingDoc.mime_type === "application/pdf" || viewingDoc.filename.toLowerCase().endsWith(".pdf");
+                const isImage = viewingDoc.mime_type.startsWith("image/");
+
+                // For PDFs, direct URL is much better (enables streaming, search, etc. in browser viewer)
+                // For images, direct URL is also fine and simpler. 
+                // We only use blobs if we absolutely need to hide the URL or if auth headers are required (but token bypasses auth).
                 setDocumentUrl(fullUrl);
             })
-            .catch(() => setDocumentUrl("ERROR"));
+            .catch((err) => {
+                console.error("Failed to get document token:", err);
+                setDocumentUrl("ERROR");
+            });
+
+        return () => {
+            if (bUrl) URL.revokeObjectURL(bUrl);
+        };
     }, [viewingDoc]);
 
     // ─── Mutations ───────────────────────────────────────────────────

@@ -29,6 +29,8 @@ import Sidebar from "@/components/layout/Sidebar";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
+import { useNotifications } from "@/hooks/useNotifications";
+import { formatDistanceToNow } from "date-fns";
 
 export default function Header() {
     const { data: session } = useSession();
@@ -36,12 +38,7 @@ export default function Header() {
     const [open, setOpen] = useState(false);
     const [notificationsOpen, setNotificationsOpen] = useState(false);
     const qc = useQueryClient();
-
-    const dummyNotifications = [
-        { id: 1, title: "Maintenance Request Update", text: "Your request for 'Plumbing Leak' has been assigned.", time: "10m ago", icon: Info, color: "text-blue-500" },
-        { id: 2, title: "Payment Received", text: "Your January dues have been processed successfully.", time: "2h ago", icon: CheckCircle2, color: "text-emerald-500" },
-        { id: 3, title: "New Announcement", text: "Upcoming pool maintenance scheduled for next week.", time: "5h ago", icon: AlertCircle, color: "text-amber-500" },
-    ];
+    const { notifications, unreadCount, markAllAsRead } = useNotifications();
 
     const userInitials =
         session?.user?.name
@@ -166,7 +163,9 @@ export default function Header() {
                                         className="rounded-full h-10 w-10 relative hover:bg-primary/10 transition-colors"
                                     >
                                         <Bell className="h-5 w-5 text-muted-foreground" />
-                                        <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-primary border-2 border-background animate-pulse" />
+                                        {unreadCount > 0 && (
+                                            <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-primary border-2 border-background animate-pulse" />
+                                        )}
                                     </Button>
                                 </SheetTrigger>
                                 <SheetContent side="right" className="w-[350px] sm:w-[450px] p-0 rounded-l-2xl border-l shadow-2xl">
@@ -183,34 +182,64 @@ export default function Header() {
                                         </SheetHeader>
 
                                         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                                            {dummyNotifications.map((n) => (
-                                                <div key={n.id} className="p-4 rounded-xl border bg-card/50 hover:bg-card transition-all cursor-pointer group hover:shadow-md">
-                                                    <div className="flex gap-4">
-                                                        <div className={cn("h-10 w-10 rounded-full flex items-center justify-center shrink-0 bg-muted/50", n.color)}>
-                                                            <n.icon className="h-5 w-5" />
-                                                        </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex justify-between items-start">
-                                                                <h4 className="font-semibold text-sm truncate">{n.title}</h4>
-                                                                <span className="text-[10px] text-muted-foreground font-medium">{n.time}</span>
+                                            {notifications.length > 0 ? (
+                                                notifications.map((n) => {
+                                                    const Icon = n.type === 'payment' ? CheckCircle2 : n.type === 'document' ? Info : AlertCircle;
+                                                    const color = n.type === 'payment' ? 'text-emerald-500' : 'text-blue-500';
+                                                    
+                                                    return (
+                                                        <div 
+                                                            key={n.id} 
+                                                            onClick={() => {
+                                                                if (n.link) router.push(n.link);
+                                                                setNotificationsOpen(false);
+                                                            }}
+                                                            className={cn(
+                                                                "p-4 rounded-xl border bg-card/50 hover:bg-card transition-all cursor-pointer group hover:shadow-md",
+                                                                !n.is_read && "border-primary/30 bg-primary/5"
+                                                            )}
+                                                        >
+                                                            <div className="flex gap-4">
+                                                                <div className={cn("h-10 w-10 rounded-full flex items-center justify-center shrink-0 bg-muted/50", color)}>
+                                                                    <Icon className="h-5 w-5" />
+                                                                </div>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <div className="flex justify-between items-start">
+                                                                        <h4 className="font-semibold text-sm truncate">{n.title}</h4>
+                                                                        <span className="text-[10px] text-muted-foreground font-medium whitespace-nowrap">
+                                                                            {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
+                                                                        </span>
+                                                                    </div>
+                                                                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{n.message}</p>
+                                                                </div>
                                                             </div>
-                                                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{n.text}</p>
                                                         </div>
+                                                    );
+                                                })
+                                            ) : (
+                                                <div className="h-full flex flex-col items-center justify-center text-center px-6 opacity-60 py-20">
+                                                    <div className="h-12 w-12 rounded-full bg-primary/5 flex items-center justify-center mb-4">
+                                                        <Bell className="h-6 w-6 text-primary/40" />
                                                     </div>
+                                                    <p className="text-sm font-medium">No notifications yet</p>
+                                                    <p className="text-xs mt-1">We&apos;ll notify you when something important happens.</p>
                                                 </div>
-                                            ))}
+                                            )}
                                             
-                                            <div className="pt-8 flex flex-col items-center justify-center text-center px-6 opacity-60">
-                                                <div className="h-12 w-12 rounded-full bg-primary/5 flex items-center justify-center mb-4">
-                                                    <Bell className="h-6 w-6 text-primary/40" />
+                                            {notifications.length > 0 && (
+                                                <div className="pt-8 flex flex-col items-center justify-center text-center px-6 opacity-60">
+                                                    <p className="text-sm font-medium">End of notifications</p>
                                                 </div>
-                                                <p className="text-sm font-medium">End of notifications</p>
-                                                <p className="text-xs mt-1">We&apos;ll let you know when there&apos;s more.</p>
-                                            </div>
+                                            )}
                                         </div>
 
                                         <div className="p-4 border-t">
-                                            <Button className="w-full rounded-xl font-bold" variant="outline" onClick={() => setNotificationsOpen(false)}>
+                                            <Button 
+                                                className="w-full rounded-xl font-bold" 
+                                                variant="outline" 
+                                                onClick={() => markAllAsRead()}
+                                                disabled={unreadCount === 0}
+                                            >
                                                 Mark all as Read
                                             </Button>
                                         </div>

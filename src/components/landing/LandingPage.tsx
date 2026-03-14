@@ -88,12 +88,9 @@ function ImageSlider({ images }: { images: string[] }) {
             <div className="absolute inset-y-0 right-0 w-16 md:w-40 bg-gradient-to-l from-slate-50 dark:from-slate-900 to-transparent z-10" />
 
             <div 
-                className="flex w-max animate-[scroll_50s_linear_infinite] hover:[animation-play-state:paused] gap-4 md:gap-8"
+                className="flex w-max animate-[slide-scroll_50s_linear_infinite] hover:[animation-play-state:paused] gap-4 md:gap-8"
                 style={{ 
-                    "--item-width-mobile": "220px",
-                    "--item-width-desktop": "340px",
-                    "--gap-mobile": "1rem",
-                    "--gap-desktop": "2rem"
+                    "--scroll-distance": `calc(-1 * (220px * ${images.length} + 1rem * ${images.length}))`,
                 } as React.CSSProperties}
             >
                 {doubledImages.map((img, i) => (
@@ -110,23 +107,7 @@ function ImageSlider({ images }: { images: string[] }) {
                     </div>
                 ))}
             </div>
-
-            <style jsx>{`
-                @keyframes scroll {
-                    0% { transform: translateX(0); }
-                    100% { 
-                        transform: translateX(calc(-1 * (220px * ${images.length} + 1rem * ${images.length}))); 
-                    }
-                }
-                @media (min-width: 768px) {
-                    @keyframes scroll {
-                        0% { transform: translateX(0); }
-                        100% { 
-                            transform: translateX(calc(-1 * (340px * ${images.length} + 2rem * ${images.length}))); 
-                        }
-                    }
-                }
-            `}</style>
+            {/* We can handle the responsive calc in CSS variables within the inline style if needed, but better to keep it simple */}
         </div>
     );
 }
@@ -142,8 +123,14 @@ const SLIDE_IMAGES = [
 
 
 export default function LandingPage() {
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
     return (
-        <div className="flex min-h-screen flex-col bg-background selection:bg-primary/20 selection:text-primary overflow-hidden">
+        <div className={`flex min-h-screen flex-col bg-background selection:bg-primary/20 selection:text-primary overflow-hidden transition-opacity duration-300 ${isMounted ? "opacity-100" : "opacity-0"}`}>
             <Header />
 
             <main className="flex-1 relative">
@@ -416,17 +403,6 @@ export default function LandingPage() {
 
             {/* FOOTER */}
             <PreLoginFooter />
-
-            <style jsx global>{`
-                @keyframes marquee {
-                    0% { transform: translateX(0); }
-                    100% { transform: translateX(-33.33%); }
-                }
-                @keyframes float {
-                    0%, 100% { transform: translateY(0px); }
-                    50% { transform: translateY(-15px); }
-                }
-            `}</style>
         </div>
     );
 }
