@@ -3,11 +3,13 @@
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useMutation } from "@tanstack/react-query";
-import { apiPostJson, apiPostMultipart } from "@/lib/api";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { apiPostJson } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Send, Upload, Bot, User, Loader2, Paperclip, Minimize2, PanelLeft } from "lucide-react";
+import { Send, Bot, User, Paperclip, Minimize2, PanelLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 type Message = {
@@ -23,7 +25,7 @@ export default function ChatbotPage() {
         { role: "assistant", content: "Hello! I am your community AI assistant. Ask me about the documents." }
     ]);
     const [input, setInput] = useState("");
-    const [uploading, setUploading] = useState(false);
+
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -46,21 +48,6 @@ export default function ChatbotPage() {
         }
     });
 
-    const uploadMutation = useMutation({
-        mutationFn: async (file: File) => {
-            const formData = new FormData();
-            formData.append("file", file);
-            return apiPostMultipart("/chatbot/upload", formData);
-        },
-        onSuccess: () => {
-            toast({ title: "Success", description: "Document uploaded to knowledge base." });
-            setUploading(false);
-        },
-        onError: () => {
-            toast({ title: "Error", description: "Failed to upload document.", variant: "destructive" });
-            setUploading(false);
-        }
-    });
 
     const handleSend = () => {
         if (!input.trim()) return;
@@ -70,12 +57,6 @@ export default function ChatbotPage() {
         chatMutation.mutate(msg);
     };
 
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files?.[0]) {
-            setUploading(true);
-            uploadMutation.mutate(e.target.files[0]);
-        }
-    };
 
     return (
         <div className="flex flex-col h-[calc(100vh-4rem)] p-4 gap-4">
@@ -84,20 +65,7 @@ export default function ChatbotPage() {
                     <h2 className="text-3xl font-bold tracking-tight">AI Assistant</h2>
                     <p className="text-muted-foreground">Ask questions about your community.</p>
                 </div>
-                {isAdmin && (
-                    <div className="flex items-center gap-2">
-                        <Button variant="outline" disabled={uploading} className="relative overflow-hidden">
-                            {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-                            {uploading ? "Uploading..." : "Upload Knowledge"}
-                            <Input
-                                type="file"
-                                className="absolute inset-0 opacity-0 cursor-pointer"
-                                onChange={handleFileUpload}
-                                accept=".pdf,.txt"
-                            />
-                        </Button>
-                    </div>
-                )}
+
             </div>
 
             <Card className="flex-1 flex flex-col overflow-hidden bg-muted/20">
@@ -108,8 +76,16 @@ export default function ChatbotPage() {
                                 <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-background border shadow-sm'}`}>
                                     {m.role === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4 text-primary" />}
                                 </div>
-                                <div className={`p-3 rounded-lg text-sm ${m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-background border shadow-sm'}`}>
-                                    {m.content}
+                                <div className={`p-3 rounded-lg text-sm overflow-hidden ${m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-background border shadow-sm'}`}>
+                                    {m.role === "user" ? (
+                                        m.content
+                                    ) : (
+                                        <div className="text-sm break-words [&>p]:mb-2 [&>p:last-child]:mb-0 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-2 [&_li]:mb-1 [&_strong]:font-bold [&_h1]:text-lg [&_h1]:font-bold [&_h1]:mb-2 [&_h2]:text-base [&_h2]:font-bold [&_h2]:mb-2 [&_h3]:font-semibold [&_h3]:mb-1 [&_table]:w-full [&_table]:border-collapse [&_table]:mb-3 [&_th]:border [&_th]:p-2 [&_th]:bg-muted/50 [&_td]:border [&_td]:p-2 [&_pre]:bg-muted [&_pre]:p-2 [&_pre]:rounded [&_code]:font-mono [&_code]:text-xs [&_a]:text-blue-500 [&_a]:underline">
+                                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                                {m.content}
+                                            </ReactMarkdown>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

@@ -37,6 +37,8 @@ import {
     FilePlus,
     AlertCircle,
     Pencil,
+    Database,
+    Bot,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -116,6 +118,9 @@ export default function DocumentsPage() {
     const [uploadTitle, setUploadTitle] = useState("");
     const [uploadAcl, setUploadAcl] = useState("RESIDENT_VISIBLE");
     const [uploadProgress, setUploadProgress] = useState(0);
+
+    const [uploadKnowledgeOpen, setUploadKnowledgeOpen] = useState(false);
+    const [uploadKnowledgeFile, setUploadKnowledgeFile] = useState<File | null>(null);
 
     const [deleteDocTarget, setDeleteDocTarget] = useState<DocumentItem | null>(null);
     const [viewingDoc, setViewingDoc] = useState<DocumentItem | null>(null);
@@ -241,6 +246,23 @@ export default function DocumentsPage() {
         },
     });
 
+    const uploadKnowledgeMut = useMutation({
+        mutationFn: async () => {
+            if (!uploadKnowledgeFile) throw new Error("No file selected");
+            const fd = new FormData();
+            fd.append("file", uploadKnowledgeFile);
+            return apiPostMultipart("/chatbot/upload", fd);
+        },
+        onSuccess: () => {
+            setUploadKnowledgeOpen(false);
+            setUploadKnowledgeFile(null);
+            toast({ title: "Success", description: "Document uploaded to knowledge base." });
+        },
+        onError: (e: any) => {
+            toast({ title: "Error", description: e.message || "Failed to upload to knowledge base.", variant: "destructive" });
+        },
+    });
+
     const deleteDocMut = useMutation({
         mutationFn: (target: DocumentItem) => apiDelete(`/documents/${target.id}`),
         onSuccess: () => {
@@ -267,6 +289,10 @@ export default function DocumentsPage() {
                 </div>
                 {isAdmin && (
                     <div className="flex gap-2">
+                        <Button variant="secondary" onClick={() => setUploadKnowledgeOpen(true)} className="gap-2">
+                            <Database className="h-4 w-4" />
+                            Knowledge Base
+                        </Button>
                         <Button variant="outline" onClick={() => setCreateFolderOpen(true)} className="gap-2">
                             <FolderPlus className="h-4 w-4" />
                             New Folder
@@ -585,6 +611,35 @@ export default function DocumentsPage() {
                             disabled={deleteDocMut.isPending}
                         >
                             {deleteDocMut.isPending ? "Deleting..." : "Delete"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* ── Upload Knowledge Dialog ── */}
+            <Dialog open={uploadKnowledgeOpen} onOpenChange={setUploadKnowledgeOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Database className="h-5 w-5" /> Upload to Knowledge Base
+                        </DialogTitle>
+                        <DialogDescription>
+                            Upload a document directly to the AI vector database. This file will not appear in the standard folders.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-2">
+                        <div className="grid gap-2">
+                            <Label>File</Label>
+                            <Input type="file" onChange={(e) => setUploadKnowledgeFile(e.target.files?.[0] || null)} />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setUploadKnowledgeOpen(false)} disabled={uploadKnowledgeMut.isPending}>Cancel</Button>
+                        <Button
+                            onClick={() => uploadKnowledgeMut.mutate()}
+                            disabled={uploadKnowledgeMut.isPending || !uploadKnowledgeFile}
+                        >
+                            {uploadKnowledgeMut.isPending ? "Uploading..." : "Upload to AI"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
