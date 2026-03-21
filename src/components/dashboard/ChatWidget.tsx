@@ -3,16 +3,16 @@
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useMutation } from "@tanstack/react-query";
-import { apiPostJson, apiPostMultipart } from "@/lib/api";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { apiPostJson } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Send,
-  Upload,
   Bot,
   User,
-  Loader2,
   MessageCircle,
   X,
   Minimize2,
@@ -43,7 +43,7 @@ export default function ChatWidget() {
     },
   ]);
   const [input, setInput] = useState("");
-  const [uploading, setUploading] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -81,28 +81,7 @@ export default function ChatWidget() {
     },
   });
 
-  const uploadMutation = useMutation({
-    mutationFn: async (file: File) => {
-      const formData = new FormData();
-      formData.append("file", file);
-      return apiPostMultipart("/chatbot/upload", formData);
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Document uploaded to knowledge base.",
-      });
-      setUploading(false);
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to upload document.",
-        variant: "destructive",
-      });
-      setUploading(false);
-    },
-  });
+
 
   const handleSend = () => {
     if (!input.trim()) return;
@@ -116,12 +95,7 @@ export default function ChatWidget() {
     chatMutation.mutate({ message: msg, history: messages });
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      setUploading(true);
-      uploadMutation.mutate(e.target.files[0]);
-    }
-  };
+
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -154,29 +128,7 @@ export default function ChatWidget() {
               </p>
             </div>
           </div>
-          {isAdmin && (
-            <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                disabled={uploading}
-                className="h-8 w-8 relative"
-                title="Upload Knowledge"
-              >
-                {uploading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Upload className="h-4 w-4" />
-                )}
-                <Input
-                  type="file"
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                  onChange={handleFileUpload}
-                  accept=".pdf,.txt"
-                />
-              </Button>
-            </div>
-          )}
+
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-background">
@@ -198,9 +150,17 @@ export default function ChatWidget() {
                   )}
                 </div>
                 <div
-                  className={`p-2.5 rounded-lg text-sm shadow-sm ${m.role === "user" ? "bg-primary text-primary-foreground rounded-tr-none" : "bg-muted/50 border rounded-tl-none"}`}
+                  className={`p-2.5 rounded-lg text-sm shadow-sm overflow-hidden ${m.role === "user" ? "bg-primary text-primary-foreground rounded-tr-none" : "bg-muted/50 border rounded-tl-none"}`}
                 >
-                  {m.content}
+                  {m.role === "user" ? (
+                    m.content
+                  ) : (
+                    <div className="text-sm break-words [&>p]:mb-2 [&>p:last-child]:mb-0 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-2 [&_li]:mb-1 [&_strong]:font-bold [&_h1]:text-lg [&_h1]:font-bold [&_h1]:mb-2 [&_h2]:text-base [&_h2]:font-bold [&_h2]:mb-2 [&_h3]:font-semibold [&_h3]:mb-1 [&_table]:w-full [&_table]:border-collapse [&_table]:mb-3 [&_th]:border [&_th]:border-border/50 [&_th]:p-1.5 [&_th]:bg-muted/50 [&_td]:border [&_td]:border-border/50 [&_td]:p-1.5 [&_pre]:bg-muted [&_pre]:p-2 [&_pre]:rounded [&_code]:font-mono [&_code]:text-xs [&_a]:text-blue-500 [&_a]:underline">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {m.content}
+                        </ReactMarkdown>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
